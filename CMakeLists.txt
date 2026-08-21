@@ -30,13 +30,13 @@ target_sources(QCPresetLeveler
         src/ChannelPair.hpp
         src/DeviceNameMatch.hpp
         src/LevelMeter.hpp
+        src/MeterScale.hpp
         src/MidiChannel.hpp
         src/PinkNoiseGenerator.hpp
         src/PresetChangeMessage.hpp
         src/SceneChangeMessage.hpp
         src/audio/AudioEngine.hpp
         src/ui/App.hpp
-        src/ui/AudioEngineStatusPanel.hpp
         src/ui/ChannelPairSelectorPanel.hpp
         src/ui/MainWindow.hpp
         src/ui/MainComponent.hpp
@@ -44,6 +44,7 @@ target_sources(QCPresetLeveler
         src/ui/MidiPortSelectorPanel.hpp
         src/ui/PresetChangeTriggerPanel.hpp
         src/ui/SceneChangeTriggerPanel.hpp
+        src/ui/VuMeterComponent.hpp
 )
 
 target_compile_definitions(QCPresetLeveler
@@ -91,6 +92,7 @@ if(QCPL_BUILD_TESTS)
         tests/ChannelPairTests.cpp
         tests/DeviceNameMatchTests.cpp
         tests/LevelMeterTests.cpp
+        tests/MeterScaleTests.cpp
         tests/PinkNoiseGeneratorTests.cpp
         tests/PresetChangeMessageTests.cpp
         tests/SceneChangeMessageTests.cpp
