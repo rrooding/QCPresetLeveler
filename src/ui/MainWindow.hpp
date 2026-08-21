@@ -6,13 +6,13 @@ namespace leveler {
 
 class MainWindow final : public juce::DocumentWindow {
 public:
-    explicit MainWindow(const juce::String& name)
+    MainWindow(const juce::String& name, juce::AudioDeviceManager& deviceManager)
         : DocumentWindow(name,
                          juce::Desktop::getInstance().getDefaultLookAndFeel().findColour(
                              juce::ResizableWindow::backgroundColourId),
                          DocumentWindow::allButtons) {
         setUsingNativeTitleBar(true);
-        setContentOwned(new MainComponent(), true);
+        setContentOwned(new MainComponent(deviceManager), true);
 
 #if JUCE_IOS || JUCE_ANDROID
         setFullScreen(true);
