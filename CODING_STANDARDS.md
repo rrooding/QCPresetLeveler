@@ -133,10 +133,11 @@ out in its description how thread-safety was preserved.
   and produce results out, exercised directly in tests, with the JUCE audio callback reduced
   to a thin adapter around them.
 - **Coverage is gated in CI** at **85%** minimum, measured via `llvm-cov`/`gcovr`, scoped to
-  non-UI code. `juce::Component` painting/layout code is excluded from the gate — pixel-level
-  GUI testing isn't practical — but any *logic* embedded in a component (event handling,
-  state transitions) should be extracted so it's testable rather than left untested inside
-  `paint()`/`resized()`.
+  `src/` excluding `src/ui/` and `src/audio/`. `juce::Component` painting/layout code
+  (`src/ui/`) and `AudioIODeviceCallback` glue (`src/audio/`) are excluded from the gate —
+  neither can be meaningfully unit-tested without real hardware — but any *logic* embedded in
+  either (event handling, state transitions, buffer math) should be extracted to `src/` root
+  so it's testable rather than left untested inside `paint()`/`resized()`/the audio callback.
 - Sanitizers (ASan + UBSan) run in CI on at least one platform's test suite.
 
 ## Build
