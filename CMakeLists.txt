@@ -24,9 +24,9 @@ juce_add_gui_app(QCPresetLeveler
 target_sources(QCPresetLeveler
     PRIVATE
         src/Main.cpp
-        src/App.hpp
-        src/MainWindow.hpp
-        src/MainComponent.hpp
+        src/ui/App.hpp
+        src/ui/MainWindow.hpp
+        src/ui/MainComponent.hpp
 )
 
 target_compile_definitions(QCPresetLeveler
