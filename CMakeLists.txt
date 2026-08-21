@@ -30,6 +30,8 @@ target_sources(QCPresetLeveler
         src/ui/App.hpp
         src/ui/MainWindow.hpp
         src/ui/MainComponent.hpp
+        src/ui/MidiPortManager.hpp
+        src/ui/MidiPortSelectorPanel.hpp
 )
 
 target_compile_definitions(QCPresetLeveler
