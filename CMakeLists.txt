@@ -46,3 +46,48 @@ target_link_libraries(QCPresetLeveler
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags
 )
+
+target_compile_options(QCPresetLeveler PRIVATE
+    $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Werror>
+    $<$<CXX_COMPILER_ID:MSVC>:/WX>
+)
+
+option(QCPL_BUILD_TESTS "Build the Catch2 test suite" ON)
+option(QCPL_ENABLE_COVERAGE "Instrument the test suite for coverage measurement" OFF)
+option(QCPL_ENABLE_SANITIZERS "Build the test suite with ASan + UBSan" OFF)
+
+if(QCPL_BUILD_TESTS)
+    FetchContent_Declare(
+        Catch2
+        GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+        GIT_TAG v3.11.0
+        GIT_SHALLOW TRUE
+    )
+    FetchContent_MakeAvailable(Catch2)
+
+    add_executable(QCPresetLevelerTests
+        tests/SanityTests.cpp
+    )
+
+    target_link_libraries(QCPresetLevelerTests
+        PRIVATE
+            Catch2::Catch2WithMain
+    )
+
+    target_compile_features(QCPresetLevelerTests PRIVATE cxx_std_23)
+
+    if(QCPL_ENABLE_COVERAGE)
+        target_compile_options(QCPresetLevelerTests PRIVATE --coverage -fno-inline)
+        target_link_options(QCPresetLevelerTests PRIVATE --coverage)
+    endif()
+
+    if(QCPL_ENABLE_SANITIZERS)
+        target_compile_options(QCPresetLevelerTests PRIVATE -fsanitize=address,undefined -fno-omit-frame-pointer)
+        target_link_options(QCPresetLevelerTests PRIVATE -fsanitize=address,undefined)
+    endif()
+
+    list(APPEND CMAKE_MODULE_PATH "${catch2_SOURCE_DIR}/extras")
+    include(CTest)
+    include(Catch)
+    catch_discover_tests(QCPresetLevelerTests)
+endif()
