@@ -2,6 +2,8 @@
 
 #include <juce_audio_devices/juce_audio_devices.h>
 
+#include "../PresetChangeMessage.hpp"
+
 namespace leveler {
 
 class MidiPortManager final : private juce::MidiInputCallback {
@@ -20,6 +22,14 @@ public:
 
     [[nodiscard]] juce::MidiOutput* getOutput() const { return midiOutput_.get(); }
     [[nodiscard]] juce::MidiInput* getInput() const { return midiInput_.get(); }
+
+    void sendProgramChange(int presetNumber, int midiChannel = 1) {
+        if (midiOutput_ == nullptr)
+            return;
+
+        for (auto& message : presetChangeMessages(presetNumber, midiChannel))
+            midiOutput_->sendMessageNow(message);
+    }
 
 private:
     void handleIncomingMidiMessage(juce::MidiInput*, const juce::MidiMessage&) override {}
