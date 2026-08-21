@@ -45,6 +45,7 @@ target_sources(QCPresetLeveler
         src/ui/MidiPortSelectorPanel.hpp
         src/ui/PresetChangeTriggerPanel.hpp
         src/ui/PresetColumnComponent.hpp
+        src/ui/PresetColumnContainer.hpp
         src/ui/VerticalLevelMeterComponent.hpp
 )
 

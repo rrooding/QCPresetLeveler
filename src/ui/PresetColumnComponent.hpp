@@ -3,6 +3,7 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 
 #include <array>
+#include <functional>
 
 #include "ChannelLevelMonitor.hpp"
 #include "MidiPortManager.hpp"
@@ -24,6 +25,13 @@ public:
         headerLabel_.setFont(juce::Font(juce::FontOptions(20.0f, juce::Font::bold)));
         headerLabel_.setColour(juce::Label::textColourId, juce::Colours::white);
         addAndMakeVisible(headerLabel_);
+
+        removeButton_.setButtonText("x");
+        removeButton_.onClick = [this] {
+            if (onRemoveRequested)
+                onRemoveRequested();
+        };
+        addAndMakeVisible(removeButton_);
 
         nameEditor_.setText("Preset " + juce::String(presetSlotNumber), false);
         nameEditor_.setJustification(juce::Justification::centred);
@@ -52,6 +60,16 @@ public:
 
     ~PresetColumnComponent() override { stopTimer(); }
 
+    // Set by whoever owns a dynamic collection of columns (#21); invoked when the user clicks
+    // this column's remove button. Left empty when there's no such owner (e.g. in isolation).
+    // Public callback member matches JUCE's own idiom (Button::onClick, ComboBox::onChange).
+    // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
+    std::function<void()> onRemoveRequested;
+
+    void setSlotNumber(int presetSlotNumber) {
+        headerLabel_.setText("Preset " + juce::String(presetSlotNumber), juce::dontSendNotification);
+    }
+
     void paint(juce::Graphics& g) override {
         auto bounds = getLocalBounds().toFloat().reduced(2.0f);
         g.setColour(juce::Colour(0xff1c2128));
@@ -63,7 +81,9 @@ public:
 
     void resized() override {
         auto area = getLocalBounds().reduced(12);
-        headerLabel_.setBounds(area.removeFromTop(28));
+        auto headerRow = area.removeFromTop(28);
+        removeButton_.setBounds(headerRow.removeFromRight(24));
+        headerLabel_.setBounds(headerRow);
         area.removeFromTop(6);
         nameEditor_.setBounds(area.removeFromTop(26));
         area.removeFromTop(10);
@@ -103,6 +123,7 @@ private:
     const ChannelLevelMonitor& levelMonitor_;
 
     juce::Label headerLabel_;
+    juce::TextButton removeButton_;
     juce::TextEditor nameEditor_;
     juce::Label dbReadoutLabel_;
     VerticalLevelMeterComponent meter_;
