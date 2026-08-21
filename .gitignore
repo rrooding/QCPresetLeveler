@@ -1,0 +1,40 @@
+# Local tooling state
+.claude/
+
+# Build output
+build/
+build-*/
+cmake-build-*/
+out/
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+CTestTestfile.cmake
+_deps/
+
+# IDE / editor
+.vs/
+.vscode/
+.idea/
+*.xcodeproj/
+*.xcworkspace/
+.clangd/
+.cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Toolchain
+*.o
+*.obj
+*.exe
+*.dll
+*.dylib
+*.so
+*.a
+*.lib
+*.pdb
