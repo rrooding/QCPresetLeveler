@@ -28,7 +28,7 @@ rules:
       - session
       - platform
       - docs
-  subject-case:
-    - 2
-    - always
-    - lower-case
+  # config-conventional's default subject-case already forbids the subject as a whole
+  # being Sentence case/Start Case/PascalCase/UPPERCASE, while still allowing embedded
+  # acronyms and proper nouns (JUCE, CTest, GitHub Actions, ...) — don't override it with
+  # a blanket lower-case rule, which flags every technical term with a capital letter.
