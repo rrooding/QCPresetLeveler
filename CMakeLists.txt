@@ -80,6 +80,11 @@ if(QCPL_BUILD_TESTS)
             juce::juce_core
     )
 
+    target_compile_definitions(QCPresetLevelerTests
+        PRIVATE
+            JUCE_USE_CURL=0
+    )
+
     target_compile_features(QCPresetLevelerTests PRIVATE cxx_std_23)
 
     if(QCPL_ENABLE_COVERAGE)
