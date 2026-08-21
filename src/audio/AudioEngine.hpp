@@ -2,6 +2,8 @@
 
 #include <juce_audio_devices/juce_audio_devices.h>
 
+#include <atomic>
+
 #include "../CaptureRingBuffer.hpp"
 #include "../PinkNoiseGenerator.hpp"
 
@@ -37,9 +39,15 @@ public:
     }
     // NOLINTEND(bugprone-easily-swappable-parameters)
 
-    void audioDeviceAboutToStart(juce::AudioIODevice*) override {}
+    void audioDeviceAboutToStart(juce::AudioIODevice* device) override {
+        sampleRate_.store(device->getCurrentSampleRate());
+    }
 
-    void audioDeviceStopped() override {}
+    void audioDeviceStopped() override { sampleRate_.store(0.0); }
+
+    // 0 until a device has actually started; callers (e.g. LevelMeter construction) should
+    // treat that as "not ready yet" rather than a real sample rate.
+    [[nodiscard]] double getSampleRate() const { return sampleRate_.load(); }
 
 private:
     static constexpr int captureCapacityInFrames = 48000 * 4;
@@ -47,6 +55,7 @@ private:
     juce::AudioDeviceManager& deviceManager_;
     CaptureRingBuffer captureBuffer_{captureCapacityInFrames};
     PinkNoiseGenerator pinkNoiseGenerator_;
+    std::atomic<double> sampleRate_{0.0};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioEngine)
 };
