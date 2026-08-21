@@ -5,6 +5,10 @@ on:
     branches: [main]
   pull_request:
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 env:
   # Ubuntu's default apt clang-tidy/clang-format are versioned per Ubuntu release;
   # pin explicitly so local (Homebrew LLVM) and CI stay close in behavior.
