@@ -40,6 +40,36 @@ out in its description how thread-safety was preserved.
 - Pass non-trivial types by `const&` unless ownership is actually transferred (then take by
   value and `std::move`).
 
+## References and pointers
+
+Preference order: **reference > smart pointer > raw pointer**. Reach for a raw pointer only
+when neither of the first two actually fits — it should be the deliberate exception, not the
+default. This is already the pattern the codebase uses for non-owning access — `App`/
+`MainWindow`/`MainComponent` thread `juce::AudioDeviceManager&`, `MidiPortManager&`, and
+`AudioEngine&` all the way down rather than pointers — so this section makes explicit what
+was already being followed.
+
+A raw pointer is legitimate when:
+
+- **Nullability is the actual point.** `MidiPortManager::getOutput()`/`getInput()` return
+  `juce::MidiOutput*`/`juce::MidiInput*` because "no device selected" is a real, expected
+  state — `std::optional<T&>` isn't available (optional references aren't a thing pre- the
+  eventual `std::optional<T&>` proposal), so a nullable raw pointer is the honest
+  representation here, not a shortcut.
+- **A library interface mandates it.** JUCE's own APIs are pointer-based in places we don't
+  control — `AudioIODeviceCallback`'s `const float* const*` buffers,
+  `audioDeviceAboutToStart(juce::AudioIODevice* device)`, etc. Match the interface; don't
+  wrap it in something else just to avoid the word "pointer".
+- **You're indexing into a C-style buffer** where `std::span` (preferred, see below) doesn't
+  fit the call site cleanly.
+
+Where a function takes a `(pointer, count)` pair for a buffer *we* control the signature of
+(not a JUCE-mandated one), prefer `std::span` instead of raw pointer + separate length —
+it's a C++23 project, and a span makes the relationship explicit and bounds-checkable rather
+than implicit and easy to mismatch. Existing pointer-pair signatures predating this decision
+(e.g. parts of `CaptureRingBuffer`) aren't required to be retrofitted on sight, but new code
+should use `std::span`, and touching the surrounding code is a reasonable moment to convert.
+
 ## Naming & structure
 
 - Types/classes: `PascalCase`. Functions, methods, variables: `camelCase`. Private/protected
