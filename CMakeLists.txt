@@ -27,11 +27,13 @@ target_sources(QCPresetLeveler
     PRIVATE
         src/Main.cpp
         src/DeviceNameMatch.hpp
+        src/PresetChangeMessage.hpp
         src/ui/App.hpp
         src/ui/MainWindow.hpp
         src/ui/MainComponent.hpp
         src/ui/MidiPortManager.hpp
         src/ui/MidiPortSelectorPanel.hpp
+        src/ui/PresetChangeTriggerPanel.hpp
 )
 
 target_compile_definitions(QCPresetLeveler
@@ -76,12 +78,14 @@ if(QCPL_BUILD_TESTS)
     add_executable(QCPresetLevelerTests
         tests/SanityTests.cpp
         tests/DeviceNameMatchTests.cpp
+        tests/PresetChangeMessageTests.cpp
     )
 
     target_link_libraries(QCPresetLevelerTests
         PRIVATE
             Catch2::Catch2WithMain
             juce::juce_core
+            juce::juce_audio_basics
     )
 
     target_compile_definitions(QCPresetLevelerTests
