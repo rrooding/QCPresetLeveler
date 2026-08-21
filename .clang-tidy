@@ -1,0 +1,16 @@
+---
+Checks: >
+  cppcoreguidelines-*,
+  performance-*,
+  bugprone-*,
+  modernize-*,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -readability-magic-numbers,
+  -modernize-use-trailing-return-type,
+  -bugprone-pointer-arithmetic-on-polymorphic-object,
+  -cppcoreguidelines-special-member-functions,
+  -cppcoreguidelines-owning-memory
+
+WarningsAsErrors: '*'
+HeaderFilterRegex: '(^|/)src/.*'
+FormatStyle: file
