@@ -2,6 +2,7 @@
 
 #include "../DeviceNameMatch.hpp"
 #include "MainWindow.hpp"
+#include "MidiPortManager.hpp"
 
 namespace leveler {
 
@@ -16,7 +17,7 @@ public:
         deviceManager_.initialiseWithDefaultDevices(maxChannels, maxChannels);
         selectPreferredDeviceIfAvailable();
 
-        mainWindow_ = std::make_unique<MainWindow>(getApplicationName(), deviceManager_);
+        mainWindow_ = std::make_unique<MainWindow>(getApplicationName(), deviceManager_, midiPortManager_);
     }
 
     void shutdown() override { mainWindow_.reset(); }
@@ -41,6 +42,7 @@ private:
     }
 
     juce::AudioDeviceManager deviceManager_;
+    MidiPortManager midiPortManager_;
     std::unique_ptr<MainWindow> mainWindow_;
 };
 
