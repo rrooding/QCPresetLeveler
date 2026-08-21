@@ -37,14 +37,15 @@ target_sources(QCPresetLeveler
         src/SceneChangeMessage.hpp
         src/audio/AudioEngine.hpp
         src/ui/App.hpp
+        src/ui/ChannelLevelMonitor.hpp
         src/ui/ChannelPairSelectorPanel.hpp
         src/ui/MainWindow.hpp
         src/ui/MainComponent.hpp
         src/ui/MidiPortManager.hpp
         src/ui/MidiPortSelectorPanel.hpp
         src/ui/PresetChangeTriggerPanel.hpp
-        src/ui/SceneChangeTriggerPanel.hpp
-        src/ui/VuMeterComponent.hpp
+        src/ui/PresetColumnComponent.hpp
+        src/ui/VerticalLevelMeterComponent.hpp
 )
 
 target_compile_definitions(QCPresetLeveler
