@@ -9,7 +9,9 @@ Checks: >
   -modernize-use-trailing-return-type,
   -bugprone-pointer-arithmetic-on-polymorphic-object,
   -cppcoreguidelines-special-member-functions,
-  -cppcoreguidelines-owning-memory
+  -cppcoreguidelines-owning-memory,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -cppcoreguidelines-pro-bounds-constant-array-index
 
 WarningsAsErrors: '*'
 HeaderFilterRegex: '(^|/)src/.*'

@@ -26,11 +26,15 @@ juce_add_gui_app(QCPresetLeveler
 target_sources(QCPresetLeveler
     PRIVATE
         src/Main.cpp
+        src/CaptureRingBuffer.hpp
         src/DeviceNameMatch.hpp
         src/MidiChannel.hpp
         src/PresetChangeMessage.hpp
         src/SceneChangeMessage.hpp
+        src/ToneGenerator.hpp
+        src/audio/AudioEngine.hpp
         src/ui/App.hpp
+        src/ui/AudioEngineStatusPanel.hpp
         src/ui/MainWindow.hpp
         src/ui/MainComponent.hpp
         src/ui/MidiPortManager.hpp
@@ -80,9 +84,11 @@ if(QCPL_BUILD_TESTS)
 
     add_executable(QCPresetLevelerTests
         tests/SanityTests.cpp
+        tests/CaptureRingBufferTests.cpp
         tests/DeviceNameMatchTests.cpp
         tests/PresetChangeMessageTests.cpp
         tests/SceneChangeMessageTests.cpp
+        tests/ToneGeneratorTests.cpp
     )
 
     target_link_libraries(QCPresetLevelerTests

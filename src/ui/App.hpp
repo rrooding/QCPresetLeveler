@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../DeviceNameMatch.hpp"
+#include "../audio/AudioEngine.hpp"
 #include "MainWindow.hpp"
 #include "MidiPortManager.hpp"
 
@@ -17,10 +18,16 @@ public:
         deviceManager_.initialiseWithDefaultDevices(maxChannels, maxChannels);
         selectPreferredDeviceIfAvailable();
 
-        mainWindow_ = std::make_unique<MainWindow>(getApplicationName(), deviceManager_, midiPortManager_);
+        audioEngine_ = std::make_unique<AudioEngine>(deviceManager_);
+
+        mainWindow_ = std::make_unique<MainWindow>(getApplicationName(), deviceManager_, midiPortManager_,
+                                                   *audioEngine_);
     }
 
-    void shutdown() override { mainWindow_.reset(); }
+    void shutdown() override {
+        mainWindow_.reset();
+        audioEngine_.reset();
+    }
 
     void systemRequestedQuit() override { quit(); }
 
@@ -43,6 +50,7 @@ private:
 
     juce::AudioDeviceManager deviceManager_;
     MidiPortManager midiPortManager_;
+    std::unique_ptr<AudioEngine> audioEngine_;
     std::unique_ptr<MainWindow> mainWindow_;
 };
 
