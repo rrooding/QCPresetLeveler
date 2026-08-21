@@ -67,6 +67,13 @@ out in its description how thread-safety was preserved.
   top of JUCE's already-substantial build times across a 3-platform CI matrix. If that
   becomes painful, the mitigation (precompiled headers or a unity/jumbo build, not reverting
   to split files) is worth revisiting in the build epic rather than assumed now.
+- **Known gotcha:** a class using `JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR` and then used
+  as a plain value member elsewhere (not behind a pointer) can have its implicit default
+  constructor silently deleted — the self-referential `LeakedObjectDetector<OwnerClass>`
+  member, evaluated while the class is still incomplete, suppresses implicit generation.
+  Declare `ClassName() = default;` explicitly rather than debugging the resulting "field has
+  no default constructor" error from an unrelated owning class (found while adding
+  `MidiPortManager`).
 
 ## Comments & documentation
 
