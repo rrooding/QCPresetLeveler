@@ -19,6 +19,8 @@ juce_add_gui_app(QCPresetLeveler
     PRODUCT_NAME "QC Preset Leveler"
     COMPANY_NAME "QCPresetLeveler"
     BUNDLE_ID "com.rrooding.qcpresetleveler"
+    MICROPHONE_PERMISSION_ENABLED TRUE
+    MICROPHONE_PERMISSION_TEXT "QC Preset Leveler needs audio input access to measure levels from your Quad Cortex."
 )
 
 target_sources(QCPresetLeveler
