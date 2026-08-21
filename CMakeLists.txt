@@ -28,6 +28,7 @@ target_sources(QCPresetLeveler
         src/Main.cpp
         src/CaptureRingBuffer.hpp
         src/DeviceNameMatch.hpp
+        src/LevelMeter.hpp
         src/MidiChannel.hpp
         src/PinkNoiseGenerator.hpp
         src/PresetChangeMessage.hpp
@@ -86,6 +87,7 @@ if(QCPL_BUILD_TESTS)
         tests/SanityTests.cpp
         tests/CaptureRingBufferTests.cpp
         tests/DeviceNameMatchTests.cpp
+        tests/LevelMeterTests.cpp
         tests/PinkNoiseGeneratorTests.cpp
         tests/PresetChangeMessageTests.cpp
         tests/SceneChangeMessageTests.cpp
