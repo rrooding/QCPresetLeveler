@@ -29,9 +29,9 @@ target_sources(QCPresetLeveler
         src/CaptureRingBuffer.hpp
         src/DeviceNameMatch.hpp
         src/MidiChannel.hpp
+        src/PinkNoiseGenerator.hpp
         src/PresetChangeMessage.hpp
         src/SceneChangeMessage.hpp
-        src/ToneGenerator.hpp
         src/audio/AudioEngine.hpp
         src/ui/App.hpp
         src/ui/AudioEngineStatusPanel.hpp
@@ -86,9 +86,9 @@ if(QCPL_BUILD_TESTS)
         tests/SanityTests.cpp
         tests/CaptureRingBufferTests.cpp
         tests/DeviceNameMatchTests.cpp
+        tests/PinkNoiseGeneratorTests.cpp
         tests/PresetChangeMessageTests.cpp
         tests/SceneChangeMessageTests.cpp
-        tests/ToneGeneratorTests.cpp
     )
 
     target_link_libraries(QCPresetLevelerTests
