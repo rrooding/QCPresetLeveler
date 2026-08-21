@@ -2,19 +2,13 @@
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
-namespace leveler
-{
+namespace leveler {
 
-class MainComponent final : public juce::Component
-{
+class MainComponent final : public juce::Component {
 public:
-    MainComponent()
-    {
-        setSize(900, 600);
-    }
+    MainComponent() { setSize(900, 600); }
 
-    void paint(juce::Graphics& g) override
-    {
+    void paint(juce::Graphics& g) override {
         g.fillAll(getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
 
         g.setColour(juce::Colours::white);
