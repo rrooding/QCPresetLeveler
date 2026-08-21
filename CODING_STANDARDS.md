@@ -87,10 +87,30 @@ out in its description how thread-safety was preserved.
 
 ## Static analysis
 
-- `clang-tidy` enabled in CI with `cppcoreguidelines-*`, `performance-*`, `bugprone-*`, and
-  `modernize-*` check groups. Warnings are errors.
+- `clang-tidy` enabled in CI (see `.clang-tidy`, run via `scripts/run-clang-tidy.sh`) with
+  `cppcoreguidelines-*`, `performance-*`, `bugprone-*`, and `modernize-*` check groups.
+  Warnings are errors.
 - Suppressions require a `// NOLINT(check-name): reason` comment — a bare `NOLINT` doesn't
   pass review.
+- Four checks are disabled project-wide, decided by actually running the ruleset against
+  real code in #44 rather than guessing upfront:
+  - `cppcoreguidelines-avoid-magic-numbers` / `readability-magic-numbers` — too noisy against
+    UI layout code (`setSize(900, 600)` and friends).
+  - `modernize-use-trailing-return-type` — a style preference, not a real modernization; not
+    worth enforcing.
+  - `cppcoreguidelines-special-member-functions` — flags every class using JUCE's
+    `JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR` for not also declaring a destructor/move
+    ops. A user-declared (even deleted) copy constructor already implicitly deletes the move
+    operations per the language rules, so there's no actual behavioral gap — only a
+    boilerplate tax on nearly every JUCE-derived class in this codebase.
+  - `cppcoreguidelines-owning-memory` — assumes `gsl::owner<>` annotations that JUCE's own API
+    doesn't use anywhere (`setContentOwned(new X(), true)`, the `START_JUCE_APPLICATION`
+    macro). Enforcing it would mean `NOLINT`-ing essentially every JUCE interaction point.
+  - `bugprone-pointer-arithmetic-on-polymorphic-object` — crashes clang-tidy itself when
+    analyzing one of JUCE's own headers (`juce_Ranges.h`); a toolchain bug, not a finding.
+- On macOS, `clang-tidy` (Homebrew/LLVM) doesn't resolve the SDK sysroot the way AppleClang
+  does implicitly — `scripts/run-clang-tidy.sh` adds `-isysroot` explicitly via `xcrun` so
+  this doesn't need rediscovering locally.
 
 ## Testing
 
@@ -140,7 +160,10 @@ lets a changelog get generated automatically later instead of hand-written.
   `BREAKING CHANGE:` footer explaining the impact.
 - Reference the story issue a commit addresses in the footer where it applies (`Refs #9`,
   `Closes #9`).
-- Description is imperative mood, lower case, no trailing period (`add`, not `Added`/`adds`).
+- Description is imperative mood, no trailing period (`add`, not `Added`/`adds`). Don't
+  capitalize the first word, but embedded acronyms/proper nouns (`JUCE`, `CTest`) are fine —
+  the subject just can't be Sentence case/Start Case/PascalCase/UPPERCASE as a whole
+  (enforced by commitlint's default `subject-case` rule).
 
 ## Open questions to flag rather than assume
 
