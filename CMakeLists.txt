@@ -19,11 +19,14 @@ juce_add_gui_app(QCPresetLeveler
     PRODUCT_NAME "QC Preset Leveler"
     COMPANY_NAME "QCPresetLeveler"
     BUNDLE_ID "com.rrooding.qcpresetleveler"
+    MICROPHONE_PERMISSION_ENABLED TRUE
+    MICROPHONE_PERMISSION_TEXT "QC Preset Leveler needs audio input access to measure levels from your Quad Cortex."
 )
 
 target_sources(QCPresetLeveler
     PRIVATE
         src/Main.cpp
+        src/DeviceNameMatch.hpp
         src/ui/App.hpp
         src/ui/MainWindow.hpp
         src/ui/MainComponent.hpp
@@ -41,6 +44,9 @@ target_link_libraries(QCPresetLeveler
     PRIVATE
         juce::juce_gui_basics
         juce::juce_gui_extra
+        juce::juce_audio_basics
+        juce::juce_audio_devices
+        juce::juce_audio_utils
     PUBLIC
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
@@ -67,11 +73,18 @@ if(QCPL_BUILD_TESTS)
 
     add_executable(QCPresetLevelerTests
         tests/SanityTests.cpp
+        tests/DeviceNameMatchTests.cpp
     )
 
     target_link_libraries(QCPresetLevelerTests
         PRIVATE
             Catch2::Catch2WithMain
+            juce::juce_core
+    )
+
+    target_compile_definitions(QCPresetLevelerTests
+        PRIVATE
+            JUCE_USE_CURL=0
     )
 
     target_compile_features(QCPresetLevelerTests PRIVATE cxx_std_23)
