@@ -160,7 +160,10 @@ lets a changelog get generated automatically later instead of hand-written.
   `BREAKING CHANGE:` footer explaining the impact.
 - Reference the story issue a commit addresses in the footer where it applies (`Refs #9`,
   `Closes #9`).
-- Description is imperative mood, lower case, no trailing period (`add`, not `Added`/`adds`).
+- Description is imperative mood, no trailing period (`add`, not `Added`/`adds`). Don't
+  capitalize the first word, but embedded acronyms/proper nouns (`JUCE`, `CTest`) are fine —
+  the subject just can't be Sentence case/Start Case/PascalCase/UPPERCASE as a whole
+  (enforced by commitlint's default `subject-case` rule).
 
 ## Open questions to flag rather than assume
 
