@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../DeviceNameMatch.hpp"
 #include "MainWindow.hpp"
 
 namespace leveler {
@@ -11,7 +12,11 @@ public:
     bool moreThanOneInstanceAllowed() override { return true; }
 
     void initialise(const juce::String&) override {
-        mainWindow_ = std::make_unique<MainWindow>(getApplicationName());
+        constexpr int maxChannels = 8;
+        deviceManager_.initialiseWithDefaultDevices(maxChannels, maxChannels);
+        selectPreferredDeviceIfAvailable();
+
+        mainWindow_ = std::make_unique<MainWindow>(getApplicationName(), deviceManager_);
     }
 
     void shutdown() override { mainWindow_.reset(); }
@@ -21,6 +26,21 @@ public:
     void anotherInstanceStarted(const juce::String&) override {}
 
 private:
+    void selectPreferredDeviceIfAvailable() {
+        for (auto* type : deviceManager_.getAvailableDeviceTypes()) {
+            for (auto& name : type->getDeviceNames()) {
+                if (looksLikeQuadCortex(name)) {
+                    auto setup = deviceManager_.getAudioDeviceSetup();
+                    setup.outputDeviceName = name;
+                    setup.inputDeviceName = name;
+                    deviceManager_.setAudioDeviceSetup(setup, true);
+                    return;
+                }
+            }
+        }
+    }
+
+    juce::AudioDeviceManager deviceManager_;
     std::unique_ptr<MainWindow> mainWindow_;
 };
 

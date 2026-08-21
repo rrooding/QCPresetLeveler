@@ -24,6 +24,7 @@ juce_add_gui_app(QCPresetLeveler
 target_sources(QCPresetLeveler
     PRIVATE
         src/Main.cpp
+        src/DeviceNameMatch.hpp
         src/ui/App.hpp
         src/ui/MainWindow.hpp
         src/ui/MainComponent.hpp
@@ -41,6 +42,9 @@ target_link_libraries(QCPresetLeveler
     PRIVATE
         juce::juce_gui_basics
         juce::juce_gui_extra
+        juce::juce_audio_basics
+        juce::juce_audio_devices
+        juce::juce_audio_utils
     PUBLIC
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
@@ -67,11 +71,13 @@ if(QCPL_BUILD_TESTS)
 
     add_executable(QCPresetLevelerTests
         tests/SanityTests.cpp
+        tests/DeviceNameMatchTests.cpp
     )
 
     target_link_libraries(QCPresetLevelerTests
         PRIVATE
             Catch2::Catch2WithMain
+            juce::juce_core
     )
 
     target_compile_features(QCPresetLevelerTests PRIVATE cxx_std_23)
