@@ -2,17 +2,15 @@
 
 #include <juce_audio_devices/juce_audio_devices.h>
 
-#include <optional>
-
 #include "../CaptureRingBuffer.hpp"
-#include "../ToneGenerator.hpp"
+#include "../PinkNoiseGenerator.hpp"
 
 namespace leveler {
 
-// Registers itself as an AudioIODeviceCallback: plays a placeholder tone out while capturing
-// all available input channels concurrently, so the round trip (JUCE -> QC via USB -> back
-// into JUCE) can be verified before #41 replaces the tone with real pink noise and #16 reads
-// the capture buffer for level analysis.
+// Registers itself as an AudioIODeviceCallback: plays pink noise out while capturing all
+// available input channels concurrently, so #16 can read the capture buffer for level
+// analysis. The reference signal itself doesn't depend on sample rate, so it's a plain member
+// rather than something reconstructed per device start/stop.
 class AudioEngine final : public juce::AudioIODeviceCallback {
 public:
     explicit AudioEngine(juce::AudioDeviceManager& deviceManager) : deviceManager_(deviceManager) {
@@ -29,7 +27,7 @@ public:
                                           int numSamples,
                                           const juce::AudioIODeviceCallbackContext&) override {
         for (int i = 0; i < numSamples; ++i) {
-            const float sample = toneGenerator_.has_value() ? toneGenerator_->nextSample() : 0.0f;
+            const float sample = pinkNoiseGenerator_.nextSample();
             for (int ch = 0; ch < numOutputChannels; ++ch)
                 if (outputChannelData[ch] != nullptr)
                     outputChannelData[ch][i] = sample;
@@ -39,19 +37,16 @@ public:
     }
     // NOLINTEND(bugprone-easily-swappable-parameters)
 
-    void audioDeviceAboutToStart(juce::AudioIODevice* device) override {
-        constexpr double placeholderToneHz = 440.0;
-        toneGenerator_.emplace(placeholderToneHz, device->getCurrentSampleRate());
-    }
+    void audioDeviceAboutToStart(juce::AudioIODevice*) override {}
 
-    void audioDeviceStopped() override { toneGenerator_.reset(); }
+    void audioDeviceStopped() override {}
 
 private:
     static constexpr int captureCapacityInFrames = 48000 * 4;
 
     juce::AudioDeviceManager& deviceManager_;
     CaptureRingBuffer captureBuffer_{captureCapacityInFrames};
-    std::optional<ToneGenerator> toneGenerator_;
+    PinkNoiseGenerator pinkNoiseGenerator_;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioEngine)
 };
