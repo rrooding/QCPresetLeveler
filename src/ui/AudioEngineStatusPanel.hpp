@@ -6,17 +6,21 @@
 #include <cmath>
 #include <optional>
 
+#include "../ChannelPair.hpp"
 #include "../LevelMeter.hpp"
 #include "../audio/AudioEngine.hpp"
+#include "ChannelPairSelectorPanel.hpp"
 
 namespace leveler {
 
-// Diagnostic display showing live peak/RMS dBFS from the capture buffer's first channel, so
-// #15's duplex engine and #16's level measurement can be verified against real hardware ahead
-// of #17 (channel selection) and #18 (a proper VU meter component) replacing this.
+// Diagnostic display showing live peak/RMS dBFS from the capture buffer's user-selected
+// channel pair, so #15's duplex engine, #16's level measurement, and #17's channel selection
+// can be verified against real hardware ahead of #18 (a proper VU meter component) replacing
+// this.
 class AudioEngineStatusPanel final : public juce::Component, private juce::Timer {
 public:
-    explicit AudioEngineStatusPanel(AudioEngine& audioEngine) : audioEngine_(audioEngine) {
+    AudioEngineStatusPanel(AudioEngine& audioEngine, const ChannelPairSelectorPanel& channelSelector)
+        : audioEngine_(audioEngine), channelSelector_(channelSelector) {
         addAndMakeVisible(statusLabel_);
         startTimerHz(10);
     }
@@ -42,8 +46,9 @@ private:
             lastSampleRate_ = sampleRate;
         }
 
+        const auto pair = channelPairForIndex(channelSelector_.getSelectedPairIndex());
         for (int i = 0; i < framesRead; ++i)
-            levelMeter_->processSample(scratch[(size_t)i][0]);
+            levelMeter_->processSample(combineStereoSample(scratch[(size_t)i], pair));
 
         statusLabel_.setText(juce::String::formatted("Peak: %.1f dBFS   RMS: %.1f dBFS",
                                                      levelMeter_->getPeakDb(), levelMeter_->getRmsDb()),
@@ -51,6 +56,7 @@ private:
     }
 
     AudioEngine& audioEngine_;
+    const ChannelPairSelectorPanel& channelSelector_;
     juce::Label statusLabel_;
     std::optional<LevelMeter> levelMeter_;
     double lastSampleRate_ = 0.0;
