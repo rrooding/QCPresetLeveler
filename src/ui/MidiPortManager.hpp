@@ -3,6 +3,7 @@
 #include <juce_audio_devices/juce_audio_devices.h>
 
 #include "../PresetChangeMessage.hpp"
+#include "../SceneChangeMessage.hpp"
 
 namespace leveler {
 
@@ -23,12 +24,19 @@ public:
     [[nodiscard]] juce::MidiOutput* getOutput() const { return midiOutput_.get(); }
     [[nodiscard]] juce::MidiInput* getInput() const { return midiInput_.get(); }
 
-    void sendProgramChange(int presetNumber, int midiChannel = 1) {
+    void sendProgramChange(int presetNumber, MidiChannel channel = MidiChannel{1}) {
         if (midiOutput_ == nullptr)
             return;
 
-        for (auto& message : presetChangeMessages(presetNumber, midiChannel))
+        for (auto& message : presetChangeMessages(presetNumber, channel))
             midiOutput_->sendMessageNow(message);
+    }
+
+    void sendSceneChange(int sceneIndex, MidiChannel channel = MidiChannel{1}) {
+        if (midiOutput_ == nullptr)
+            return;
+
+        midiOutput_->sendMessageNow(sceneChangeMessage(sceneIndex, channel));
     }
 
 private:
