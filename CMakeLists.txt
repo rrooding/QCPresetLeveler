@@ -27,6 +27,7 @@ target_sources(QCPresetLeveler
     PRIVATE
         src/Main.cpp
         src/CaptureRingBuffer.hpp
+        src/ChannelPair.hpp
         src/DeviceNameMatch.hpp
         src/LevelMeter.hpp
         src/MidiChannel.hpp
@@ -36,6 +37,7 @@ target_sources(QCPresetLeveler
         src/audio/AudioEngine.hpp
         src/ui/App.hpp
         src/ui/AudioEngineStatusPanel.hpp
+        src/ui/ChannelPairSelectorPanel.hpp
         src/ui/MainWindow.hpp
         src/ui/MainComponent.hpp
         src/ui/MidiPortManager.hpp
@@ -86,6 +88,7 @@ if(QCPL_BUILD_TESTS)
     add_executable(QCPresetLevelerTests
         tests/SanityTests.cpp
         tests/CaptureRingBufferTests.cpp
+        tests/ChannelPairTests.cpp
         tests/DeviceNameMatchTests.cpp
         tests/LevelMeterTests.cpp
         tests/PinkNoiseGeneratorTests.cpp
