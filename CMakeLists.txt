@@ -27,13 +27,16 @@ target_sources(QCPresetLeveler
     PRIVATE
         src/Main.cpp
         src/DeviceNameMatch.hpp
+        src/MidiChannel.hpp
         src/PresetChangeMessage.hpp
+        src/SceneChangeMessage.hpp
         src/ui/App.hpp
         src/ui/MainWindow.hpp
         src/ui/MainComponent.hpp
         src/ui/MidiPortManager.hpp
         src/ui/MidiPortSelectorPanel.hpp
         src/ui/PresetChangeTriggerPanel.hpp
+        src/ui/SceneChangeTriggerPanel.hpp
 )
 
 target_compile_definitions(QCPresetLeveler
@@ -79,6 +82,7 @@ if(QCPL_BUILD_TESTS)
         tests/SanityTests.cpp
         tests/DeviceNameMatchTests.cpp
         tests/PresetChangeMessageTests.cpp
+        tests/SceneChangeMessageTests.cpp
     )
 
     target_link_libraries(QCPresetLevelerTests
