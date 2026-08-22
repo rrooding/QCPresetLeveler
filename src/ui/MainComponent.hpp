@@ -6,7 +6,7 @@
 #include "ChannelPairSelectorPanel.hpp"
 #include "MidiPortSelectorPanel.hpp"
 #include "PresetChangeTriggerPanel.hpp"
-#include "PresetColumnComponent.hpp"
+#include "PresetColumnContainer.hpp"
 
 namespace leveler {
 
@@ -16,13 +16,13 @@ public:
                   AudioEngine& audioEngine)
         : deviceSelector_(deviceManager, 0, 8, 0, 8, false, false, true, true), midiPanel_(midiPortManager),
           presetChangePanel_(midiPortManager), levelMonitor_(audioEngine, channelPairSelector_),
-          presetColumn_(1, midiPortManager, levelMonitor_) {
+          presetColumns_(midiPortManager, levelMonitor_) {
         addAndMakeVisible(deviceSelector_);
         addAndMakeVisible(midiPanel_);
         addAndMakeVisible(presetChangePanel_);
         addAndMakeVisible(channelPairSelector_);
-        addAndMakeVisible(presetColumn_);
-        setSize(900, 1180);
+        addAndMakeVisible(presetColumns_);
+        setSize(1280, 1180);
     }
 
     void resized() override {
@@ -31,8 +31,7 @@ public:
         presetChangePanel_.setBounds(area.removeFromBottom(40));
         midiPanel_.setBounds(area.removeFromBottom(72));
 
-        auto columnArea = area.removeFromBottom(520).removeFromLeft(280);
-        presetColumn_.setBounds(columnArea);
+        presetColumns_.setBounds(area.removeFromBottom(520));
 
         deviceSelector_.setBounds(area);
     }
@@ -43,7 +42,7 @@ private:
     PresetChangeTriggerPanel presetChangePanel_;
     ChannelPairSelectorPanel channelPairSelector_;
     ChannelLevelMonitor levelMonitor_;
-    PresetColumnComponent presetColumn_;
+    PresetColumnContainer presetColumns_;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)
 };
