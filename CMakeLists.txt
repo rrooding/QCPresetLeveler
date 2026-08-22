@@ -30,11 +30,13 @@ target_sources(QCPresetLeveler
         src/ChannelPair.hpp
         src/DeviceNameMatch.hpp
         src/LevelMeter.hpp
+        src/LevelingInstruction.hpp
         src/MeterScale.hpp
         src/MidiChannel.hpp
         src/PinkNoiseGenerator.hpp
         src/PresetChangeMessage.hpp
         src/SceneChangeMessage.hpp
+        src/TargetLevel.hpp
         src/audio/AudioEngine.hpp
         src/ui/App.hpp
         src/ui/ChannelLevelMonitor.hpp
@@ -46,6 +48,7 @@ target_sources(QCPresetLeveler
         src/ui/PresetChangeTriggerPanel.hpp
         src/ui/PresetColumnComponent.hpp
         src/ui/PresetColumnContainer.hpp
+        src/ui/TargetLevelPanel.hpp
         src/ui/VerticalLevelMeterComponent.hpp
 )
 
@@ -94,10 +97,12 @@ if(QCPL_BUILD_TESTS)
         tests/ChannelPairTests.cpp
         tests/DeviceNameMatchTests.cpp
         tests/LevelMeterTests.cpp
+        tests/LevelingInstructionTests.cpp
         tests/MeterScaleTests.cpp
         tests/PinkNoiseGeneratorTests.cpp
         tests/PresetChangeMessageTests.cpp
         tests/SceneChangeMessageTests.cpp
+        tests/TargetLevelTests.cpp
     )
 
     target_link_libraries(QCPresetLevelerTests

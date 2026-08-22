@@ -5,6 +5,8 @@
 #include <array>
 #include <functional>
 
+#include "../LevelingInstruction.hpp"
+#include "../TargetLevel.hpp"
 #include "ChannelLevelMonitor.hpp"
 #include "MidiPortManager.hpp"
 #include "VerticalLevelMeterComponent.hpp"
@@ -12,14 +14,16 @@
 namespace leveler {
 
 // The core per-preset column: name, dB readout, VU meter, and scene buttons A-H, mirroring
-// the original mockup's card layout. Preset navigation (#11/#12) and the target/tolerance
-// readout (#20/#22) are separate stories — this component only displays what's currently
-// measured for whichever preset is active on the QC.
+// the original mockup's card layout, plus the raise/lower instruction readout (#20) driven by
+// the shared target level. Preset navigation (#11/#12) and the in-tolerance visual state
+// (#22) are separate stories — this component only displays what's currently measured for
+// whichever preset is active on the QC, and states the instruction in plain text.
 class PresetColumnComponent final : public juce::Component, private juce::Timer {
 public:
     PresetColumnComponent(int presetSlotNumber, MidiPortManager& midiPortManager,
-                          const ChannelLevelMonitor& levelMonitor)
-        : midiPortManager_(midiPortManager), levelMonitor_(levelMonitor), meter_(levelMonitor) {
+                          const ChannelLevelMonitor& levelMonitor, const TargetLevel& targetLevel)
+        : midiPortManager_(midiPortManager), levelMonitor_(levelMonitor), targetLevel_(targetLevel),
+          meter_(levelMonitor) {
         headerLabel_.setText("Preset " + juce::String(presetSlotNumber), juce::dontSendNotification);
         headerLabel_.setJustificationType(juce::Justification::centred);
         headerLabel_.setFont(juce::Font(juce::FontOptions(20.0f, juce::Font::bold)));
@@ -44,6 +48,11 @@ public:
         dbReadoutLabel_.setFont(juce::Font(juce::FontOptions(28.0f, juce::Font::bold)));
         dbReadoutLabel_.setColour(juce::Label::textColourId, juce::Colours::white);
         addAndMakeVisible(dbReadoutLabel_);
+
+        instructionLabel_.setJustificationType(juce::Justification::centred);
+        instructionLabel_.setFont(juce::Font(juce::FontOptions(14.0f)));
+        instructionLabel_.setColour(juce::Label::textColourId, juce::Colours::lightgrey);
+        addAndMakeVisible(instructionLabel_);
 
         addAndMakeVisible(meter_);
 
@@ -88,6 +97,8 @@ public:
         nameEditor_.setBounds(area.removeFromTop(26));
         area.removeFromTop(10);
         dbReadoutLabel_.setBounds(area.removeFromTop(40));
+        area.removeFromTop(2);
+        instructionLabel_.setBounds(area.removeFromTop(18));
         area.removeFromTop(6);
 
         auto sceneArea = area.removeFromBottom(2 * sceneButtonHeight + sceneButtonSpacing);
@@ -115,17 +126,34 @@ private:
     }
 
     void timerCallback() override {
-        dbReadoutLabel_.setText(juce::String(levelMonitor_.getRmsDb(), 1) + " dB",
-                                juce::dontSendNotification);
+        const auto measuredDb = levelMonitor_.getRmsDb();
+        dbReadoutLabel_.setText(juce::String(measuredDb, 1) + " dB", juce::dontSendNotification);
+
+        const auto instruction = computeLevelingInstruction(measuredDb, targetLevel_.getTargetDb());
+        switch (instruction.direction) {
+        case LevelingDirection::onTarget:
+            instructionLabel_.setText("On target", juce::dontSendNotification);
+            break;
+        case LevelingDirection::raise:
+            instructionLabel_.setText("Raise by " + juce::String(instruction.adjustmentDb, 1) + " dB",
+                                      juce::dontSendNotification);
+            break;
+        case LevelingDirection::lower:
+            instructionLabel_.setText("Lower by " + juce::String(instruction.adjustmentDb, 1) + " dB",
+                                      juce::dontSendNotification);
+            break;
+        }
     }
 
     MidiPortManager& midiPortManager_;
     const ChannelLevelMonitor& levelMonitor_;
+    const TargetLevel& targetLevel_;
 
     juce::Label headerLabel_;
     juce::TextButton removeButton_;
     juce::TextEditor nameEditor_;
     juce::Label dbReadoutLabel_;
+    juce::Label instructionLabel_;
     VerticalLevelMeterComponent meter_;
     std::array<juce::TextButton, 8> sceneButtons_;
 
