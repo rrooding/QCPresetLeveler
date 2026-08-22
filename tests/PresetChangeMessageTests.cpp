@@ -31,3 +31,15 @@ TEST_CASE("presetChangeMessages targets the requested MIDI channel", "[midi]") {
     REQUIRE(messages[1].getChannel() == 5);
     REQUIRE(messages[2].getChannel() == 5);
 }
+
+TEST_CASE("presetChangeMessages defaults to setlist 0 (factory presets)", "[midi]") {
+    auto messages = leveler::presetChangeMessages(0, leveler::MidiChannel{1});
+    REQUIRE(messages[1].getControllerValue() == 0);
+}
+
+TEST_CASE("presetChangeMessages sends the requested setlist as CC#32", "[midi]") {
+    auto messages = leveler::presetChangeMessages(0, leveler::MidiChannel{1}, leveler::SetlistId{1});
+    REQUIRE(messages[1].isController());
+    REQUIRE(messages[1].getControllerNumber() == 32);
+    REQUIRE(messages[1].getControllerValue() == 1);
+}

@@ -36,6 +36,8 @@ target_sources(QCPresetLeveler
         src/PinkNoiseGenerator.hpp
         src/PresetChangeMessage.hpp
         src/SceneChangeMessage.hpp
+        src/SetlistId.hpp
+        src/SetlistSelection.hpp
         src/TargetLevel.hpp
         src/audio/AudioEngine.hpp
         src/ui/App.hpp
@@ -48,6 +50,7 @@ target_sources(QCPresetLeveler
         src/ui/PresetChangeTriggerPanel.hpp
         src/ui/PresetColumnComponent.hpp
         src/ui/PresetColumnContainer.hpp
+        src/ui/SetlistSelectorPanel.hpp
         src/ui/TargetLevelPanel.hpp
         src/ui/VerticalLevelMeterComponent.hpp
 )
@@ -102,6 +105,7 @@ if(QCPL_BUILD_TESTS)
         tests/PinkNoiseGeneratorTests.cpp
         tests/PresetChangeMessageTests.cpp
         tests/SceneChangeMessageTests.cpp
+        tests/SetlistSelectionTests.cpp
         tests/TargetLevelTests.cpp
     )
 
