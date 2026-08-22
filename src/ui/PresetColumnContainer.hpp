@@ -6,6 +6,7 @@
 #include <memory>
 #include <vector>
 
+#include "../TargetLevel.hpp"
 #include "ChannelLevelMonitor.hpp"
 #include "MidiPortManager.hpp"
 #include "PresetColumnComponent.hpp"
@@ -17,8 +18,9 @@ namespace leveler {
 // keep laying out left to right.
 class PresetColumnContainer final : public juce::Component {
 public:
-    PresetColumnContainer(MidiPortManager& midiPortManager, const ChannelLevelMonitor& levelMonitor)
-        : midiPortManager_(midiPortManager), levelMonitor_(levelMonitor) {
+    PresetColumnContainer(MidiPortManager& midiPortManager, const ChannelLevelMonitor& levelMonitor,
+                          const TargetLevel& targetLevel)
+        : midiPortManager_(midiPortManager), levelMonitor_(levelMonitor), targetLevel_(targetLevel) {
         addButton_.setButtonText("+ Add Preset");
         addButton_.onClick = [this] { addColumn(); };
         addAndMakeVisible(addButton_);
@@ -41,7 +43,7 @@ private:
 
     void addColumn() {
         auto column = std::make_unique<PresetColumnComponent>((int)columns_.size() + 1, midiPortManager_,
-                                                              levelMonitor_);
+                                                              levelMonitor_, targetLevel_);
         auto* rawColumn = column.get();
         // Deferred via callAsync: the click that triggers this originates from inside
         // rawColumn's own remove button, so destroying it synchronously here would delete the
@@ -70,6 +72,7 @@ private:
 
     MidiPortManager& midiPortManager_;
     const ChannelLevelMonitor& levelMonitor_;
+    const TargetLevel& targetLevel_;
     std::vector<std::unique_ptr<PresetColumnComponent>> columns_;
     juce::TextButton addButton_;
 
