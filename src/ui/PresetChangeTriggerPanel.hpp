@@ -2,6 +2,7 @@
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
+#include "../SetlistSelection.hpp"
 #include "MidiPortManager.hpp"
 
 namespace leveler {
@@ -10,7 +11,8 @@ namespace leveler {
 // hardware before #11 exists to drive it from arrow keys / a proper preset list.
 class PresetChangeTriggerPanel final : public juce::Component {
 public:
-    explicit PresetChangeTriggerPanel(MidiPortManager& midiPortManager) : midiPortManager_(midiPortManager) {
+    PresetChangeTriggerPanel(MidiPortManager& midiPortManager, const SetlistSelection& setlistSelection)
+        : midiPortManager_(midiPortManager), setlistSelection_(setlistSelection) {
         presetLabel_.setText("Preset #", juce::dontSendNotification);
         addAndMakeVisible(presetLabel_);
 
@@ -23,7 +25,7 @@ public:
         goButton_.setButtonText("Go");
         goButton_.onClick = [this] {
             const auto presetNumber = (int)presetNumberSlider_.getValue() - 1;
-            midiPortManager_.sendProgramChange(presetNumber);
+            midiPortManager_.sendProgramChange(presetNumber, MidiChannel{1}, setlistSelection_.getSetlist());
         };
         addAndMakeVisible(goButton_);
     }
@@ -38,6 +40,7 @@ public:
 
 private:
     MidiPortManager& midiPortManager_;
+    const SetlistSelection& setlistSelection_;
 
     juce::Label presetLabel_;
     juce::Slider presetNumberSlider_;

@@ -24,11 +24,12 @@ public:
     [[nodiscard]] juce::MidiOutput* getOutput() const { return midiOutput_.get(); }
     [[nodiscard]] juce::MidiInput* getInput() const { return midiInput_.get(); }
 
-    void sendProgramChange(int presetNumber, MidiChannel channel = MidiChannel{1}) {
+    void sendProgramChange(int presetNumber, MidiChannel channel = MidiChannel{1},
+                           SetlistId setlist = SetlistId{0}) {
         if (midiOutput_ == nullptr)
             return;
 
-        for (auto& message : presetChangeMessages(presetNumber, channel))
+        for (auto& message : presetChangeMessages(presetNumber, channel, setlist))
             midiOutput_->sendMessageNow(message);
     }
 
