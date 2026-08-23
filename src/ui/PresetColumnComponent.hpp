@@ -4,8 +4,10 @@
 
 #include <array>
 #include <functional>
+#include <utility>
 
 #include "../LevelingInstruction.hpp"
+#include "../SetlistSelection.hpp"
 #include "../TargetLevel.hpp"
 #include "ChannelLevelMonitor.hpp"
 #include "MidiPortManager.hpp"
@@ -15,15 +17,16 @@ namespace leveler {
 
 // The core per-preset column: name, dB readout, VU meter, and scene buttons A-H, mirroring
 // the original mockup's card layout, plus the raise/lower instruction readout (#20) driven by
-// the shared target level. Preset navigation (#11/#12) and the in-tolerance visual state
-// (#22) are separate stories — this component only displays what's currently measured for
-// whichever preset is active on the QC, and states the instruction in plain text.
+// the shared target level, and the QC preset number + current scene this column tracks for
+// arrow-key navigation (#11). The in-tolerance visual state (#22) is a separate story — this
+// component only displays what's currently measured, and states the instruction in plain text.
 class PresetColumnComponent final : public juce::Component, private juce::Timer {
 public:
     PresetColumnComponent(int presetSlotNumber, MidiPortManager& midiPortManager,
-                          const ChannelLevelMonitor& levelMonitor, const TargetLevel& targetLevel)
+                          const ChannelLevelMonitor& levelMonitor, const TargetLevel& targetLevel,
+                          const SetlistSelection& setlistSelection)
         : midiPortManager_(midiPortManager), levelMonitor_(levelMonitor), targetLevel_(targetLevel),
-          meter_(levelMonitor) {
+          setlistSelection_(setlistSelection), meter_(levelMonitor) {
         headerLabel_.setText("Preset " + juce::String(presetSlotNumber), juce::dontSendNotification);
         headerLabel_.setJustificationType(juce::Justification::centred);
         headerLabel_.setFont(juce::Font(juce::FontOptions(20.0f, juce::Font::bold)));
@@ -36,6 +39,17 @@ public:
                 onRemoveRequested();
         };
         addAndMakeVisible(removeButton_);
+
+        presetNumberLabel_.setText("QC #", juce::dontSendNotification);
+        presetNumberLabel_.setColour(juce::Label::textColourId, juce::Colours::lightgrey);
+        addAndMakeVisible(presetNumberLabel_);
+
+        presetNumberSlider_.setSliderStyle(juce::Slider::IncDecButtons);
+        presetNumberSlider_.setTextBoxStyle(juce::Slider::TextBoxLeft, false, 50, 22);
+        presetNumberSlider_.setRange(1, 256, 1);
+        presetNumberSlider_.setValue(presetSlotNumber);
+        presetNumberSlider_.onValueChange = [this] { triggerPresetChange(); };
+        addAndMakeVisible(presetNumberSlider_);
 
         nameEditor_.setText("Preset " + juce::String(presetSlotNumber), false);
         nameEditor_.setJustification(juce::Justification::centred);
@@ -60,9 +74,10 @@ public:
             auto& button = sceneButtons_.at(i);
             const int sceneIndex = (int)i;
             button.setButtonText(juce::String::charToString((juce::juce_wchar)('A' + sceneIndex)));
-            button.onClick = [this, sceneIndex] { midiPortManager_.sendSceneChange(sceneIndex); };
+            button.onClick = [this, sceneIndex] { setCurrentScene(sceneIndex); };
             addAndMakeVisible(button);
         }
+        updateSceneButtonColours();
 
         startTimerHz(15);
     }
@@ -79,12 +94,32 @@ public:
         headerLabel_.setText("Preset " + juce::String(presetSlotNumber), juce::dontSendNotification);
     }
 
+    // The QC preset number this column tracks (0-based, matching MidiPortManager's convention).
+    [[nodiscard]] int getPresetNumber() const { return (int)presetNumberSlider_.getValue() - 1; }
+
+    // Sends a Program Change for this column's preset number, driven by #11's arrow-key
+    // navigation (or by the user directly editing the preset number field).
+    void triggerPresetChange() {
+        midiPortManager_.sendProgramChange(getPresetNumber(), MidiChannel{1}, setlistSelection_.getSetlist());
+    }
+
+    // Moves the tracked current scene by delta (clamped to A-H) and sends the CC#43 change,
+    // driven by #11's Up/Down arrow-key navigation.
+    void stepScene(int delta) { setCurrentScene(juce::jlimit(0, 7, currentSceneIndex_ + delta)); }
+
+    void setSelected(bool selected) {
+        isSelected_ = selected;
+        repaint();
+    }
+
+    [[nodiscard]] bool isSelected() const { return isSelected_; }
+
     void paint(juce::Graphics& g) override {
         auto bounds = getLocalBounds().toFloat().reduced(2.0f);
         g.setColour(juce::Colour(0xff1c2128));
         g.fillRoundedRectangle(bounds, 8.0f);
 
-        g.setColour(juce::Colour(0xfff5a623));
+        g.setColour(isSelected_ ? juce::Colour(0xfff5a623) : juce::Colour(0xff3a4048));
         g.drawRoundedRectangle(bounds, 8.0f, 2.0f);
     }
 
@@ -94,6 +129,12 @@ public:
         removeButton_.setBounds(headerRow.removeFromRight(24));
         headerLabel_.setBounds(headerRow);
         area.removeFromTop(6);
+
+        auto presetNumberRow = area.removeFromTop(24);
+        presetNumberLabel_.setBounds(presetNumberRow.removeFromLeft(36));
+        presetNumberSlider_.setBounds(presetNumberRow);
+        area.removeFromTop(6);
+
         nameEditor_.setBounds(area.removeFromTop(26));
         area.removeFromTop(10);
         dbReadoutLabel_.setBounds(area.removeFromTop(40));
@@ -125,6 +166,22 @@ private:
                 .setBounds(bottomRow.removeFromLeft(buttonWidth).reduced(3));
     }
 
+    void setCurrentScene(int sceneIndex) {
+        currentSceneIndex_ = sceneIndex;
+        midiPortManager_.sendSceneChange(currentSceneIndex_);
+        updateSceneButtonColours();
+    }
+
+    void updateSceneButtonColours() {
+        for (size_t i = 0; i < sceneButtons_.size(); ++i) {
+            const bool isCurrent = std::cmp_equal(i, currentSceneIndex_);
+            sceneButtons_.at(i).setColour(juce::TextButton::buttonColourId,
+                                          isCurrent ? juce::Colour(0xfff5a623) : juce::Colour(0xff2a2f36));
+            sceneButtons_.at(i).setColour(juce::TextButton::textColourOffId,
+                                          isCurrent ? juce::Colours::black : juce::Colours::white);
+        }
+    }
+
     void timerCallback() override {
         const auto measuredDb = levelMonitor_.getRmsDb();
         dbReadoutLabel_.setText(juce::String(measuredDb, 1) + " dB", juce::dontSendNotification);
@@ -148,9 +205,15 @@ private:
     MidiPortManager& midiPortManager_;
     const ChannelLevelMonitor& levelMonitor_;
     const TargetLevel& targetLevel_;
+    const SetlistSelection& setlistSelection_;
+
+    int currentSceneIndex_ = 0;
+    bool isSelected_ = false;
 
     juce::Label headerLabel_;
     juce::TextButton removeButton_;
+    juce::Label presetNumberLabel_;
+    juce::Slider presetNumberSlider_;
     juce::TextEditor nameEditor_;
     juce::Label dbReadoutLabel_;
     juce::Label instructionLabel_;
