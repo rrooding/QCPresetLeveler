@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "../LevelingInstruction.hpp"
+#include "../PresetSceneMemory.hpp"
 #include "../SetlistSelection.hpp"
 #include "../TargetLevel.hpp"
 #include "ChannelLevelMonitor.hpp"
@@ -18,15 +19,17 @@ namespace leveler {
 // The core per-preset column: name, dB readout, VU meter, and scene buttons A-H, mirroring
 // the original mockup's card layout, plus the raise/lower instruction readout (#20) driven by
 // the shared target level, and the QC preset number + current scene this column tracks for
-// arrow-key navigation (#11). The in-tolerance visual state (#22) is a separate story — this
-// component only displays what's currently measured, and states the instruction in plain text.
+// arrow-key navigation (#11). Whenever the preset number changes, the scene is recalled from
+// presetSceneMemory rather than left as-is or reset to A (#13). The in-tolerance visual state
+// (#22) is a separate story — this component only displays what's currently measured, and
+// states the instruction in plain text.
 class PresetColumnComponent final : public juce::Component, private juce::Timer {
 public:
     PresetColumnComponent(int presetSlotNumber, MidiPortManager& midiPortManager,
                           const ChannelLevelMonitor& levelMonitor, const TargetLevel& targetLevel,
-                          const SetlistSelection& setlistSelection)
+                          const SetlistSelection& setlistSelection, PresetSceneMemory& presetSceneMemory)
         : midiPortManager_(midiPortManager), levelMonitor_(levelMonitor), targetLevel_(targetLevel),
-          setlistSelection_(setlistSelection), meter_(levelMonitor) {
+          setlistSelection_(setlistSelection), presetSceneMemory_(presetSceneMemory), meter_(levelMonitor) {
         headerLabel_.setText("Preset " + juce::String(presetSlotNumber), juce::dontSendNotification);
         headerLabel_.setJustificationType(juce::Justification::centred);
         headerLabel_.setFont(juce::Font(juce::FontOptions(20.0f, juce::Font::bold)));
@@ -48,7 +51,14 @@ public:
         presetNumberSlider_.setTextBoxStyle(juce::Slider::TextBoxLeft, false, 50, 22);
         presetNumberSlider_.setRange(1, 256, 1);
         presetNumberSlider_.setValue(presetSlotNumber);
-        presetNumberSlider_.onValueChange = [this] { triggerPresetChange(); };
+        // Depends on presetNumberSlider_'s value (set just above in this same body), so can't
+        // move earlier into the member-initializer list.
+        // NOLINTNEXTLINE(cppcoreguidelines-prefer-member-initializer): see above
+        currentSceneIndex_ = presetSceneMemory_.getScene(getPresetNumber());
+        presetNumberSlider_.onValueChange = [this] {
+            triggerPresetChange();
+            setCurrentScene(presetSceneMemory_.getScene(getPresetNumber()));
+        };
         addAndMakeVisible(presetNumberSlider_);
 
         nameEditor_.setText("Preset " + juce::String(presetSlotNumber), false);
@@ -168,6 +178,7 @@ private:
 
     void setCurrentScene(int sceneIndex) {
         currentSceneIndex_ = sceneIndex;
+        presetSceneMemory_.recordScene(getPresetNumber(), currentSceneIndex_);
         midiPortManager_.sendSceneChange(currentSceneIndex_);
         updateSceneButtonColours();
     }
@@ -206,6 +217,7 @@ private:
     const ChannelLevelMonitor& levelMonitor_;
     const TargetLevel& targetLevel_;
     const SetlistSelection& setlistSelection_;
+    PresetSceneMemory& presetSceneMemory_;
 
     int currentSceneIndex_ = 0;
     bool isSelected_ = false;

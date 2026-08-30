@@ -35,6 +35,7 @@ target_sources(QCPresetLeveler
         src/MidiChannel.hpp
         src/PinkNoiseGenerator.hpp
         src/PresetChangeMessage.hpp
+        src/PresetSceneMemory.hpp
         src/SceneChangeMessage.hpp
         src/SetlistId.hpp
         src/SetlistSelection.hpp
@@ -103,6 +104,7 @@ if(QCPL_BUILD_TESTS)
         tests/MeterScaleTests.cpp
         tests/PinkNoiseGeneratorTests.cpp
         tests/PresetChangeMessageTests.cpp
+        tests/PresetSceneMemoryTests.cpp
         tests/SceneChangeMessageTests.cpp
         tests/SetlistSelectionTests.cpp
         tests/TargetLevelTests.cpp
