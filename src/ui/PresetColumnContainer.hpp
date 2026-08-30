@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "../PresetSceneMemory.hpp"
 #include "../SetlistSelection.hpp"
 #include "../TargetLevel.hpp"
 #include "ChannelLevelMonitor.hpp"
@@ -21,6 +22,9 @@ namespace leveler {
 // limitation: arrow keys only reach here while this component (not a child text field/slider)
 // has keyboard focus — clicking into a name field or a slider steals it, same as most simple
 // JUCE apps; there's no global key interception here.
+//
+// Owns the PresetSceneMemory shared across every column (#13) — preset identity is device-wide,
+// not scoped to whichever column happens to be displaying a given preset right now.
 //
 // Scroll/pagination for more columns than fit on screen is #43, not this — columns simply
 // keep laying out left to right.
@@ -81,8 +85,9 @@ private:
     static constexpr int columnSpacing = 16;
 
     void addColumn() {
-        auto column = std::make_unique<PresetColumnComponent>((int)columns_.size() + 1, midiPortManager_,
-                                                              levelMonitor_, targetLevel_, setlistSelection_);
+        auto column =
+            std::make_unique<PresetColumnComponent>((int)columns_.size() + 1, midiPortManager_, levelMonitor_,
+                                                    targetLevel_, setlistSelection_, presetSceneMemory_);
         auto* rawColumn = column.get();
         // Deferred via callAsync: the click that triggers this originates from inside
         // rawColumn's own remove button, so destroying it synchronously here would delete the
@@ -132,6 +137,7 @@ private:
     const ChannelLevelMonitor& levelMonitor_;
     const TargetLevel& targetLevel_;
     const SetlistSelection& setlistSelection_;
+    PresetSceneMemory presetSceneMemory_;
     std::vector<std::unique_ptr<PresetColumnComponent>> columns_;
     int selectedIndex_ = 0;
     juce::TextButton addButton_;
